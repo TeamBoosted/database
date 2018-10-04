@@ -18,7 +18,7 @@ const Medium = sequelize.define('medium', {
   creator: Sequelize.STRING,
   type: Sequelize.STRING,
   image: Sequelize.STRING,
-  synopsis: Sequelize.STRING,
+  synopsis: Sequelize.STRING(2000),
   moviedb_id: Sequelize.INTEGER,
   popularity: Sequelize.DECIMAL,
   vote_avg: Sequelize.DECIMAL,
