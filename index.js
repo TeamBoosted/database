@@ -6,7 +6,7 @@ const cors = require('cors');
 const PORT = process.env.PORT || 8081;
 
 const app = express();
-app.use(cors());
+// app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -27,17 +27,16 @@ app.post('/db/users/signup', (req, res) => {
 });
 
 app.post('/db/addMedium', (req, res) => {
-  let mediumObj = req.body;
+  let mediumObj = req.body.data;
   console.log(mediumObj);
-  res.end('ok');
-  // db.addMedium(mediumObj)
-  //   .then(() => {
-  //     res.sendStatus(200);
-  //   })
-  //   .catch(err => {
-  //     console.log(err);
-  //     res.sendStatus(500);
-  //   });
+  db.addMedium(mediumObj)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch(err => {
+      console.log(err);
+      res.sendStatus(500);
+    });
 });
 
 app.post('/db/users/getUserByToken', (req, res) => {
