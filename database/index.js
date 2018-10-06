@@ -10,7 +10,7 @@ sequelize.authenticate()
   .catch(console.log);
 
 const User = sequelize.define('user', {
-  id_token: Sequelize.STRING
+  id_token: Sequelize.STRING(2000);
 });
 
 const Medium = sequelize.define('medium', {
@@ -32,46 +32,46 @@ const User_Media = sequelize.define('user_media', {
 User.belongsToMany(Medium, { through: User_Media });
 Medium.belongsToMany(User, { through: User_Media });
 
-// User.sync({ force: false })
-//   .then(() => {
-//     return Medium.sync({ force: false });
-//   })
-//   .then(() => {
-//     return User_Media.sync({ force: false });
-//   })
-//   .then(() => {
-//     const testUser = User.build({
-//       id_token: 'auth0|12345'
-//     });
-//     return testUser.save();
-//   })
-//   .then(user => {
-//     const testmedium = Medium.build({
-//       title: 'Inception0',
-//       creator: 'Bruce Willis',
-//       type: 'TV Show',
-//       image: 'www.idiehardmoveposter.com',
-//       synopsis: 'Ki yay within a yippe',
-//       moviedb_id: 12345,
-//       popularity: 10,
-//       vote_avg: 3.142,
-//       vote_count: 9000
-//     })
-//     return testmedium.save();
-//   })
-//   .then(medium => {
-//     User.findById(1)
-//       .then(user => {
-//         user.addMedium(medium);
-//       }).catch(console.log);
-//   })
-//   .then(() => {
-//     return User.findAll().then(data => console.log(data[0].dataValues));
-//   })
-//   .then(() => {
-//     return Medium.findAll().then(data => console.log(data[0].dataValues));
-//   })
-// .catch (console.log);
+User.sync({ force: false })
+  .then(() => {
+    return Medium.sync({ force: false });
+  })
+  .then(() => {
+    return User_Media.sync({ force: false });
+  })
+  .then(() => {
+    const testUser = User.build({
+      id_token: 'auth0|12345'
+    });
+    return testUser.save();
+  })
+  .then(user => {
+    const testmedium = Medium.build({
+      title: 'Inception0',
+      creator: 'Bruce Willis',
+      type: 'TV Show',
+      image: 'www.idiehardmoveposter.com',
+      synopsis: 'Ki yay within a yippe',
+      moviedb_id: 12345,
+      popularity: 10,
+      vote_avg: 3.142,
+      vote_count: 9000
+    })
+    return testmedium.save();
+  })
+  .then(medium => {
+    User.findById(1)
+      .then(user => {
+        user.addMedium(medium);
+      }).catch(console.log);
+  })
+  .then(() => {
+    return User.findAll().then(data => console.log(data[0].dataValues));
+  })
+  .then(() => {
+    return Medium.findAll().then(data => console.log(data[0].dataValues));
+  })
+  .catch(console.log);
 
 const addUser = (id_token) => {
   const testuser = User.build({ id_token });
