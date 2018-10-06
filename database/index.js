@@ -10,7 +10,7 @@ sequelize.authenticate()
   .catch(console.log);
 
 const User = sequelize.define('user', {
-  id_token: Sequelize.STRING(2000);
+  id_token: Sequelize.STRING(2000)
 });
 
 const Medium = sequelize.define('medium', {
