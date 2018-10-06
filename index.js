@@ -27,9 +27,11 @@ app.post('/db/users/signup', (req, res) => {
 });
 
 app.post('/db/addMedium', (req, res) => {
-  let mediumObj = req.body.data;
+  let mediumObj = req.body;
+  let id_token = mediumObj.id_token;
   console.log(mediumObj);
-  db.addMedium(mediumObj)
+  console.log(mediumObj);
+  db.addMedium(mediumObj, id_token)
     .then(() => {
       res.sendStatus(200);
     })
@@ -43,7 +45,18 @@ app.post('/db/users/getUserByToken', (req, res) => {
   let { id_token } = req.body;
   db.findOneUserByToken(id_token)
     .then(data => {
-      console.log(data);
+      res.json(data);
+    })
+    .catch(err => {
+      console.log(err);
+      res.sendStatus(500);
+    })
+});
+
+app.post('/db/getLastThreeMedia', (req, res) => {
+  let { id_token } = req.body;
+  db.getLastThreeMedia(id_token)
+    .then(data => {
       res.json(data);
     })
     .catch(err => {
