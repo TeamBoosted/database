@@ -27,10 +27,7 @@ app.post('/db/users/signup', (req, res) => {
 });
 
 app.post('/db/addMedium', (req, res) => {
-  let mediumObj = req.body;
-  let id_token = mediumObj.id_token;
-  console.log(mediumObj);
-  console.log(mediumObj);
+  let { mediumObj, id_token } = req.body;
   db.addMedium(mediumObj, id_token)
     .then(() => {
       res.sendStatus(200);
@@ -57,7 +54,11 @@ app.post('/db/getLastThreeMedia', (req, res) => {
   let { id_token } = req.body;
   db.getLastThreeMedia(id_token)
     .then(data => {
-      res.json(data);
+      let massaged = data.map(el => {
+        delete el.dataValues.user_media;
+        return el.dataValues;
+      });
+      res.json(massaged);
     })
     .catch(err => {
       console.log(err);
