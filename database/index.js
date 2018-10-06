@@ -32,58 +32,65 @@ const User_Media = sequelize.define('user_media', {
 User.belongsToMany(Medium, { through: User_Media });
 Medium.belongsToMany(User, { through: User_Media });
 
-User.sync({ force: false })
-  .then(() => {
-    return Medium.sync({ force: false });
-  })
-  .then(() => {
-    return User_Media.sync({ force: false });
-  })
-  .then(() => {
-    const testUser = User.build({
-      id_token: 'auth0|12345'
-    });
-    return testUser.save();
-  })
-  .then(user => {
-    const testmedium = Medium.build({
-      title: 'Inception0',
-      creator: 'Bruce Willis',
-      type: 'TV Show',
-      image: 'www.idiehardmoveposter.com',
-      synopsis: 'Ki yay within a yippe',
-      moviedb_id: 12345,
-      popularity: 10,
-      vote_avg: 3.142,
-      vote_count: 9000
-    })
-    return testmedium.save();
-  })
-  .then(medium => {
-    User.findById(1)
-      .then(user => {
-        user.addMedium(medium);
-      }).catch(console.log);
-  })
-  .then(() => {
-    return User.findAll().then(data => console.log(data[0].dataValues));
-  })
-  .then(() => {
-    return Medium.findAll().then(data => console.log(data[0].dataValues));
-  })
-  .catch(console.log);
+// User.sync({ force: true })
+//   .then(() => {
+//     return Medium.sync({ force: true });
+//   })
+//   .then(() => {
+//     return User_Media.sync({ force: true });
+//   })
+//   .then(() => {
+//     const testUser = User.build({
+//       id_token: 'auth0|12345'
+//     });
+//     return testUser.save();
+//   })
+//   .then(user => {
+//     const testmedium = Medium.build({
+//       title: 'Inception0',
+//       creator: 'Bruce Willis',
+//       type: 'TV Show',
+//       image: 'www.idiehardmoveposter.com',
+//       synopsis: 'Ki yay within a yippe',
+//       moviedb_id: 12345,
+//       popularity: 10,
+//       vote_avg: 3.142,
+//       vote_count: 9000
+//     })
+//     return testmedium.save();
+//   })
+//   .then(medium => {
+//     User.findById(1)
+//       .then(user => {
+//         user.addMedium(medium);
+//       }).catch(console.log);
+//   })
+//   .then(() => {
+//     return User.findAll().then(data => console.log(data[0].dataValues));
+//   })
+//   .then(() => {
+//     return Medium.findAll().then(data => console.log(data[0].dataValues));
+//   })
+//   .catch(console.log);
 
 const addUser = (id_token) => {
-  const testuser = User.build({ id_token });
-  return testuser.save();
+  const testuser = User.create({ id_token });
+  return testuser;
 };
 
 const addMedium = (mediumObj, id_token) => {
   return Medium.create(mediumObj)
     .then(medium => {
-      findOneUserByToken(id_token)
+      return findOneUserByToken(id_token)
         .then(user => {
-          return user.addMedium(medium);
+          if (!user) {
+            return addUser(id_token)
+              .then(user => {
+                return user.addMedium(medium);
+              })
+          } else {
+            return user.addMedium(medium);
+          }
         })
     })
 };
@@ -97,7 +104,7 @@ const getLastThreeMedia = (id_token) => {
   return User.findOne({ where: { id_token } })
     .then(user => {
       return user.getMedia({ limit: 3, order: [['createdAt', 'DESC']] });
-    });
+    })
 };
 
 module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia };
