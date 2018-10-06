@@ -10,7 +10,7 @@ sequelize.authenticate()
   .catch(console.log);
 
 const User = sequelize.define('user', {
-  id_token: Sequelize.STRING
+  id_token: Sequelize.STRING(2000)
 });
 
 const Medium = sequelize.define('medium', {
@@ -32,12 +32,12 @@ const User_Media = sequelize.define('user_media', {
 User.belongsToMany(Medium, { through: User_Media });
 Medium.belongsToMany(User, { through: User_Media });
 
-// User.sync({ force: false })
+// User.sync({ force: true })
 //   .then(() => {
-//     return Medium.sync({ force: false });
+//     return Medium.sync({ force: true });
 //   })
 //   .then(() => {
-//     return User_Media.sync({ force: false });
+//     return User_Media.sync({ force: true });
 //   })
 //   .then(() => {
 //     const testUser = User.build({
@@ -71,19 +71,26 @@ Medium.belongsToMany(User, { through: User_Media });
 //   .then(() => {
 //     return Medium.findAll().then(data => console.log(data[0].dataValues));
 //   })
-// .catch (console.log);
+//   .catch(console.log);
 
 const addUser = (id_token) => {
-  const testuser = User.build({ id_token });
-  return testuser.save();
+  const testuser = User.create({ id_token });
+  return testuser;
 };
 
 const addMedium = (mediumObj, id_token) => {
   return Medium.create(mediumObj)
     .then(medium => {
-      findOneUserByToken(id_token)
+      return findOneUserByToken(id_token)
         .then(user => {
-          return user.addMedium(medium);
+          if (!user) {
+            return addUser(id_token)
+              .then(user => {
+                return user.addMedium(medium);
+              })
+          } else {
+            return user.addMedium(medium);
+          }
         })
     })
 };
@@ -97,7 +104,7 @@ const getLastThreeMedia = (id_token) => {
   return User.findOne({ where: { id_token } })
     .then(user => {
       return user.getMedia({ limit: 3, order: [['createdAt', 'DESC']] });
-    });
+    })
 };
 
 module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia };
