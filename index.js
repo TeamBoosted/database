@@ -38,6 +38,18 @@ app.post('/db/addMedium', (req, res) => {
     });
 });
 
+app.post('/db/addGenre', (req, res) => {
+  let { genreList } = req.body;
+  db.addMedium(genreList)
+    .then(() => {
+      res.sendStatus(200);
+    })
+    .catch(err => {
+      console.log(err);
+      res.sendStatus(500);
+    });
+});
+
 app.post('/db/users/getUserByToken', (req, res) => {
   let { id_token } = req.body;
   db.findOneUserByToken(id_token)

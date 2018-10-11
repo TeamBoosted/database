@@ -2,6 +2,8 @@ require('dotenv').config();
 const Sequelize = require('sequelize');
 const PG_URL = process.env.PG_URL || `postgres://${process.env.PG_USER}:${process.env.PG_PASS}@localhost:5432/test`
 const sequelize = new Sequelize(PG_URL);
+const myObj = require('./testCommands.js')
+console.log('myObj:',myObj)
 
 sequelize.authenticate()
   .then(() => {
@@ -10,7 +12,10 @@ sequelize.authenticate()
   .catch(console.log);
 
 const User = sequelize.define('user', {
-  id_token: Sequelize.STRING(2000)
+  id_token: { 
+    type:Sequelize.STRING(2000),
+    unique: true
+  }
 });
 
 const Medium = sequelize.define('medium', {
@@ -19,26 +24,190 @@ const Medium = sequelize.define('medium', {
   type: Sequelize.STRING,
   image: Sequelize.STRING,
   synopsis: Sequelize.STRING(2000),
-  moviedb_id: Sequelize.INTEGER,
+  moviedb_id: {
+    type:Sequelize.INTEGER,
+    unique:true
+  },
   popularity: Sequelize.DECIMAL,
   vote_avg: Sequelize.DECIMAL,
   vote_count: Sequelize.INTEGER
 });
 
+const Genre = sequelize.define('genre',{
+  genre_id: {
+    type:Sequelize.INTEGER,
+    unique:true
+  },
+  name: Sequelize.STRING
+});
+
+const User_Genre = sequelize.define('user_genre',{
+  genre_score: {
+    type:Sequelize.INTEGER,
+    defaultValue: 0
+  }  
+});
+
+const Medium_Genre = sequelize.define('medium_genre', {});
+
+
 const User_Media = sequelize.define('user_media', {
   rating: Sequelize.INTEGER
 });
 
+
 User.belongsToMany(Medium, { through: User_Media });
 Medium.belongsToMany(User, { through: User_Media });
+
+Genre.belongsToMany(User, { through: User_Genre });
+User.belongsToMany(Genre, { through: User_Genre });
+
+Genre.belongsToMany(Medium, { through: Medium_Genre });
+Medium.belongsToMany(Genre,{ through: Medium_Genre });
+
+
+
+const addUser = (id_token) => {
+  const testuser = User.create({ id_token });
+  return testuser;
+};
+
+const addMedium = (mediumObj, id_token) => {
+  return Medium.create(mediumObj)
+    .then(medium => {
+      return findOneUserByToken(id_token)
+        .then(user => {
+          if (!user) {
+            return addUser(id_token)
+              .then(user => {
+                return user.addMedium(medium);
+              })
+          } else {
+            return user.addMedium(medium);
+          }
+        })
+    })
+};
+
+const addGenre = (genreList,id_token) => {
+  genreList.forEach(genre => {
+    return Genre.create(genre)
+      .then( 
+        findOneUserAndGenreRelation(genre.genre_id,id_token)
+        .then(relationship => { 
+          relationship.increment('genre_score', {by: 1})
+        })
+      )
+  })
+};
+
+const addGenreToUser = (genreList, id_token) => {
+  genreList.forEach(genre=> {
+    return Genre.create(genre)
+    .then(genre => {
+      return findOneUserByToken(id_token)
+        .then(user => {
+          if (!user) {
+            return addUser(id_token)
+              .then(user => {
+                  return user.addGenre(genre,id_token)
+              })
+          } else {
+            return user.addGenre(genre)
+          }
+        })
+      })
+  .catch(console.log)
+
+  })
+};
+
+const addGenreToMedium = (genreList, id) => {
+  genreList.forEach(genre=> {
+    return Genre.create(genre)
+      .then(genre => {
+        return findOneMediumByID(id)
+          .then(medium => {
+            if (!medium) {
+              return false
+            } else {
+              console.log('MEDIUM IS:',medium)
+              return medium.addGenre(genre);
+            }
+          })
+      })
+  })
+};
+
+const findOneUserAndGenreRelation = (userId,genreId) => {
+  const testGenreUser = User_Genre.findOne({ where: { userId, genreId } });
+  return testGenreUser;
+}
+
+const findOneUserByToken = (id_token) => {
+  const testOneUser = User.findOne({ where: { id_token } });
+  return testOneUser;
+};
+
+const findOneMediumByID = (id) => {
+  const testOneMedium = Medium.findOne({ where: { id } });
+  return testOneMedium;
+};
+
+const findOneGenreByID = (genre_id) => {
+  const testOneGenre = Genre.findOne({ where: { genre_id } });
+  return testOneGenre;
+};
+
+const getLastThreeMedia = (id_token) => {
+  return User.findOne({ where: { id_token } })
+    .then(user => {
+      return user.getMedia({ limit: 3, order: [['createdAt', 'DESC']] });
+    })
+};
+
+// addMedium(myObj,'1')
+
+// addGenre(
+//   [{genre_id:2000,
+//   name:'comedy'},
+//   {genre_id:16,
+//     name:'horror'},
+//     {genre_id:17,
+//       name:'drama'}])
+
+// addGenreToUser([ {genre_id:19,name:'test'},{genre_id:1337,name:'boom'}],'1')
+
+// addGenreToMedium({genre_id:19,name:'testingGM'},1)
+
+// console.log(findOneUserAndGenreRelation(2,14))
+findOneUserAndGenreRelation(2, 3).then(data=> {
+  console.log('test find one user and genre =================>', data)
+  data.increment('genre_score', {by: 1})
+})
+findOneUserAndGenreRelation(2, 12).then(data=> {
+  console.log('test find one user and genre =================>', data)
+  data.increment('genre_score', {by: 1})
+})
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation };
+
 
 // User.sync({ force: true })
 //   .then(() => {
 //     return Medium.sync({ force: true });
 //   })
 //   .then(() => {
+//     return Genre.sync({ force: true });
+//   })
+//   .then(() => {
 //     return User_Media.sync({ force: true });
 //   })
+//   .then(() => {
+//     return User_Genre.sync({ force: true });
+//   })
+//   .then(() => {
+//     return Medium_Genre.sync({ force: true });
+//   }) 
 //   .then(() => {
 //     const testUser = User.build({
 //       id_token: 'auth0|12345'
@@ -66,48 +235,24 @@ Medium.belongsToMany(User, { through: User_Media });
 //       }).catch(console.log);
 //   })
 //   .then(() => {
+//     const testGenre = Genre.build({
+//       genre_id: 12,
+//       name: 'action'
+//     })
+//     return testGenre.save()
+//   })
+//   .then(() => {
 //     return User.findAll().then(data => console.log(data[0].dataValues));
 //   })
 //   .then(() => {
 //     return Medium.findAll().then(data => console.log(data[0].dataValues));
 //   })
+//   .then(()=>{
+//     return Genre.findAll().then(data=>console.log(data[0].dataValues))
+//   })
 //   .catch(console.log);
 
-const addUser = (id_token) => {
-  const testuser = User.create({ id_token });
-  return testuser;
-};
 
-const addMedium = (mediumObj, id_token) => {
-  return Medium.create(mediumObj)
-    .then(medium => {
-      return findOneUserByToken(id_token)
-        .then(user => {
-          if (!user) {
-            return addUser(id_token)
-              .then(user => {
-                return user.addMedium(medium);
-              })
-          } else {
-            return user.addMedium(medium);
-          }
-        })
-    })
-};
-
-const findOneUserByToken = (id_token) => {
-  const testOneUser = User.findOne({ where: { id_token } });
-  return testOneUser;
-};
-
-const getLastThreeMedia = (id_token) => {
-  return User.findOne({ where: { id_token } })
-    .then(user => {
-      return user.getMedia({ limit: 3, order: [['createdAt', 'DESC']] });
-    })
-};
-
-module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia };
 
 
 // Medium.sync({ force: true }).then(() => {
