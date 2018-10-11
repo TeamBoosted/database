@@ -91,34 +91,36 @@ const addMedium = (mediumObj, id_token) => {
 
 const addGenre = (genreList,id_token) => {
   genreList.forEach(genre => {
-    return Genre.create(genre)
-      .then( 
-        findOneUserAndGenreRelation(genre.genre_id,id_token)
-        .then(relationship => { 
-          relationship.increment('genre_score', {by: 1})
-        })
-      )
+    return Genre.upsert(genre)
+      
   })
 };
 
 const addGenreToUser = (genreList, id_token) => {
   genreList.forEach(genre=> {
-    return Genre.create(genre)
+    let fuckinFuck = genre.genre_id
+    console.log('WHAT IS YOU',genre)
+    return Genre.upsert(genre)
     .then(genre => {
       return findOneUserByToken(id_token)
         .then(user => {
           if (!user) {
             return addUser(id_token)
               .then(user => {
-                  return user.addGenre(genre,id_token)
+                return user.addGenre(genre,id_token)
               })
           } else {
             return user.addGenre(genre)
           }
         })
       })
-  .catch(console.log)
-
+      .then(()=>{
+        findOneUserAndGenreRelation(id_token, 3)
+          .then(data=> {
+            data.increment('genre_score', {by: 1})
+        })
+      })
+      .catch(console.log)
   })
 };
 
@@ -176,19 +178,17 @@ const getLastThreeMedia = (id_token) => {
 //     {genre_id:17,
 //       name:'drama'}])
 
-// addGenreToUser([ {genre_id:19,name:'test'},{genre_id:1337,name:'boom'}],'1')
+addGenreToUser([ {genre_id:9,name:'test'},{genre_id:1337,name:'boom'}],'2')
 
 // addGenreToMedium({genre_id:19,name:'testingGM'},1)
 
 // console.log(findOneUserAndGenreRelation(2,14))
-findOneUserAndGenreRelation(2, 3).then(data=> {
-  console.log('test find one user and genre =================>', data)
-  data.increment('genre_score', {by: 1})
-})
-findOneUserAndGenreRelation(2, 12).then(data=> {
-  console.log('test find one user and genre =================>', data)
-  data.increment('genre_score', {by: 1})
-})
+
+// findOneUserAndGenreRelation(2, 3).then(data=> {
+//   console.log('test find one user and genre =================>', data)
+//   data.increment('genre_score', {by: 1})
+// })
+
 module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation };
 
 
