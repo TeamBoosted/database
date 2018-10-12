@@ -98,27 +98,30 @@ const addGenreToUser = (genreList, id_token) => {
   genreList.forEach(genre => {
     console.log('HEY BRO, here is our genre and id_token',genre,id_token)
     return Genre.upsert(genre)
-    .then(genre => {
-
-      return findOneUserByToken(id_token)
-        .then(user => { 
-            if (!genre) {
-                  findOneUserAndGenreRelation(id_token, 53)
-                    .then(data=> {
-                      console.log('HERE IS THE DATA',data)
-                      data.increment('genre_score', {by: 1})
-                  }) 
-            } else { 
-            return user.addGenre(genre)
-            .then(()=>{
-              findOneUserAndGenreRelation(id_token, 53)
-                .then(data=> {
-                  data.increment('genre_score', {by: 1})
-                })
-            })
-          }
-        }) 
+      .then(genreResults => {
+        findOneGenreByID(genre.genre_id)
+          .then(genreData=>{
+            return findOneUserByToken(id_token)
+              .then(user => { 
+                if (!genreResults) {
+                      findOneUserAndGenreRelation(id_token, genreData.dataValues.id)
+                        .then(data=> {
+                          console.log('HERE IS THE DATA',data)
+                          data.increment('genre_score', {by: 1})
+                      }) 
+                } else { 
+                  return user.addGenre(genre)
+                  .then(()=>{
+                    findOneUserAndGenreRelation(id_token, 53)
+                      .then(data=> {
+                        data.increment('genre_score', {by: 1})
+                      })
+                  })
+                }
+            }) 
       })
+    })
+
       .catch(console.log)
   })
 };
@@ -177,6 +180,8 @@ const getLastThreeMedia = (id_token) => {
 //     {genre_id:17,
 //       name:'drama'}])
 
+// findOneGenreByID(111)
+// .then(data=>console.log(data))
 addGenreToUser([ {genre_id:111,name:'test'},{genre_id:2222,name:'boom'}],'2')
 
 // addGenreToMedium({genre_id:19,name:'testingGM'},1)
