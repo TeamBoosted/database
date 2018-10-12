@@ -40,7 +40,7 @@ app.post('/db/addMedium', (req, res) => {
 
 app.post('/db/addGenre', (req, res) => {
   let { genreList } = req.body;
-  db.addMedium(genreList)
+  db.addGenre(genreList)
     .then(() => {
       res.sendStatus(200);
     })

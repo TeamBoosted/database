@@ -2,8 +2,6 @@ require('dotenv').config();
 const Sequelize = require('sequelize');
 const PG_URL = process.env.PG_URL || `postgres://${process.env.PG_USER}:${process.env.PG_PASS}@localhost:5432/test`
 const sequelize = new Sequelize(PG_URL);
-const myObj = require('./testCommands.js')
-console.log('myObj:',myObj)
 
 sequelize.authenticate()
   .then(() => {
@@ -89,7 +87,7 @@ const addMedium = (mediumObj, id_token) => {
     })
 };
 
-const addGenre = (genreList,id_token) => {
+const addGenre = (genreList) => {
   genreList.forEach(genre => {
     return Genre.upsert(genre)
       
@@ -97,28 +95,29 @@ const addGenre = (genreList,id_token) => {
 };
 
 const addGenreToUser = (genreList, id_token) => {
-  genreList.forEach(genre=> {
-    let fuckinFuck = genre.genre_id
-    console.log('WHAT IS YOU',genre)
+  genreList.forEach(genre => {
+    console.log('HEY BRO, here is our genre and id_token',genre,id_token)
     return Genre.upsert(genre)
     .then(genre => {
+
       return findOneUserByToken(id_token)
-        .then(user => {
-          if (!user) {
-            return addUser(id_token)
-              .then(user => {
-                return user.addGenre(genre,id_token)
-              })
-          } else {
+        .then(user => { 
+            if (!genre) {
+                  findOneUserAndGenreRelation(id_token, 53)
+                    .then(data=> {
+                      console.log('HERE IS THE DATA',data)
+                      data.increment('genre_score', {by: 1})
+                  }) 
+            } else { 
             return user.addGenre(genre)
+            .then(()=>{
+              findOneUserAndGenreRelation(id_token, 53)
+                .then(data=> {
+                  data.increment('genre_score', {by: 1})
+                })
+            })
           }
-        })
-      })
-      .then(()=>{
-        findOneUserAndGenreRelation(id_token, 3)
-          .then(data=> {
-            data.increment('genre_score', {by: 1})
-        })
+        }) 
       })
       .catch(console.log)
   })
@@ -141,7 +140,7 @@ const addGenreToMedium = (genreList, id) => {
   })
 };
 
-const findOneUserAndGenreRelation = (userId,genreId) => {
+const findOneUserAndGenreRelation = (userId, genreId) => {
   const testGenreUser = User_Genre.findOne({ where: { userId, genreId } });
   return testGenreUser;
 }
@@ -178,13 +177,13 @@ const getLastThreeMedia = (id_token) => {
 //     {genre_id:17,
 //       name:'drama'}])
 
-addGenreToUser([ {genre_id:9,name:'test'},{genre_id:1337,name:'boom'}],'2')
+addGenreToUser([ {genre_id:111,name:'test'},{genre_id:2222,name:'boom'}],'2')
 
 // addGenreToMedium({genre_id:19,name:'testingGM'},1)
 
 // console.log(findOneUserAndGenreRelation(2,14))
 
-// findOneUserAndGenreRelation(2, 3).then(data=> {
+// findOneUserAndGenreRelation(2, 3).then( data => {
 //   console.log('test find one user and genre =================>', data)
 //   data.increment('genre_score', {by: 1})
 // })
