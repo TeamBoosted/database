@@ -39,8 +39,8 @@ app.post('/db/addMedium', (req, res) => {
 });
 
 app.post('/db/addGenre', (req, res) => {
-  let { genreList } = req.body;
-  db.addGenre(genreList)
+  const { genre_ids, id_token } = req.body;
+  db.addGenreToUser(genre_ids, id_token)
     .then(() => {
       res.sendStatus(200);
     })
