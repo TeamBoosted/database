@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const db = require('./database');
 const cors = require('cors');
 const PORT = process.env.PORT || 8081;
+const { scrapeGR } = require('./goodReads');
 
 const app = express();
 // app.use(cors());
@@ -77,6 +78,8 @@ app.post('/db/getLastThreeMedia', (req, res) => {
       res.sendStatus(500);
     })
 });
+
+scrapeGR();
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);

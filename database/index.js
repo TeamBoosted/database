@@ -10,8 +10,8 @@ sequelize.authenticate()
   .catch(console.log);
 
 const User = sequelize.define('user', {
-  id_token: { 
-    type:Sequelize.STRING(2000),
+  id_token: {
+    type: Sequelize.STRING(2000),
     unique: true
   }
 });
@@ -23,27 +23,27 @@ const Medium = sequelize.define('medium', {
   image: Sequelize.STRING,
   synopsis: Sequelize.STRING(2000),
   moviedb_id: {
-    type:Sequelize.INTEGER,
-    unique:true
+    type: Sequelize.INTEGER,
+    unique: true
   },
   popularity: Sequelize.DECIMAL,
   vote_avg: Sequelize.DECIMAL,
   vote_count: Sequelize.INTEGER
 });
 
-const Genre = sequelize.define('genre',{
+const Genre = sequelize.define('genre', {
   genre_id: {
-    type:Sequelize.INTEGER,
-    unique:true
+    type: Sequelize.INTEGER,
+    unique: true
   },
   name: Sequelize.STRING
 });
 
-const User_Genre = sequelize.define('user_genre',{
+const User_Genre = sequelize.define('user_genre', {
   genre_score: {
-    type:Sequelize.INTEGER,
+    type: Sequelize.INTEGER,
     defaultValue: 0
-  }  
+  }
 });
 
 const Medium_Genre = sequelize.define('medium_genre', {});
@@ -61,7 +61,7 @@ Genre.belongsToMany(User, { through: User_Genre });
 User.belongsToMany(Genre, { through: User_Genre });
 
 Genre.belongsToMany(Medium, { through: Medium_Genre });
-Medium.belongsToMany(Genre,{ through: Medium_Genre });
+Medium.belongsToMany(Genre, { through: Medium_Genre });
 
 
 
@@ -93,7 +93,7 @@ const addGenre = (genre_id) => {
   // genreList.forEach(genre => {
   //   Genre.upsert({genre_id: genre}) 
   // })
-  return Genre.upsert({genre_id})
+  return Genre.upsert({ genre_id })
   // return Promise.all([
   //   Genre.upsert({genre_id: genreList[0]}),
   //   Genre.upsert({genre_id: genreList[1]}),
@@ -101,10 +101,10 @@ const addGenre = (genre_id) => {
   // ]);
 };
 
-const addGenreToUser = async(genreList, id_token) => {
+const addGenreToUser = async (genreList, id_token) => {
   const user = await findOneUserByToken(id_token);
   const userId = user.dataValues.id;
-  
+
   genreList.forEach((genre_id, index) => {
     return Genre.upsert({ genre_id })
       .then(genreResults => {
@@ -112,29 +112,29 @@ const addGenreToUser = async(genreList, id_token) => {
           findOneGenreByID(genre_id)
             .then(results => {
               const genreId = results.dataValues.id;
-              User_Genre.upsert({ genreId, userId})
+              User_Genre.upsert({ genreId, userId })
                 .then(user_genre_results => {
-                  if(!user_genre_results) {
+                  if (!user_genre_results) {
                     findOneUserAndGenreRelation(userId, genreId)
-                    .then(data => {
-                      let score = genreList.length - index;
-                      data.increment('genre_score', { by: score});
-                    })
+                      .then(data => {
+                        let score = genreList.length - index;
+                        data.increment('genre_score', { by: score });
+                      })
                   }
                 })
-              })
+            })
         } else {
           findOneGenreByID(genre_id)
-          .then(results => {
-            const genreId = results.dataValues.id;
-            User_Genre.upsert({ genreId, userId })
-          })
+            .then(results => {
+              const genreId = results.dataValues.id;
+              User_Genre.upsert({ genreId, userId })
+            })
         }
       })
-    })
+  })
 };
 const addGenreToMedium = (genreList, id) => {
-  genreList.forEach(genre=> {
+  genreList.forEach(genre => {
     return Genre.create(genre)
       .then(genre => {
         return findOneMediumByID(id)
@@ -142,7 +142,7 @@ const addGenreToMedium = (genreList, id) => {
             if (!medium) {
               return false
             } else {
-              console.log('MEDIUM IS:',medium)
+              console.log('MEDIUM IS:', medium)
               return medium.addGenre(genre);
             }
           })
@@ -218,7 +218,7 @@ module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, ad
 //   })
 //   .then(() => {
 //     return Medium_Genre.sync({ force: true });
-//   }) 
+//   })
 //   .then(() => {
 //     const testUser = User.build({
 //       id_token: 'auth0|12345'
