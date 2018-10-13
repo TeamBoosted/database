@@ -1,7 +1,8 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
-const genres = require('./genres.js');
-console.log(genres);
+const { genres } = require('./genres.js');
+const { Book } = require('../database');
+console.log(Book)
 
 const getLinksByGenre = async (genre) => {
   try {
@@ -30,17 +31,18 @@ const getEachBookData = async (endpoint) => {
     const vote_count = $('.count.value-title').text().replace(/\s/g, '');
     const popularity = Number($('.votes.value-title').text().replace(/\s/g, '')) + Number(vote_count);
     const image = $('#coverImage').attr('src');
-    const moviedb_id = endpoint.replace(/[^\d]/g, '');
-    return { title, synopsis, vote_avg, vote_count, popularity, image, moviedb_id, type: 'book' };
+    const goodReads_id = endpoint.replace(/[^\d]/g, '');
+    return { title, synopsis, vote_avg, vote_count, popularity, image, goodReads_id, type: 'book' };
   } catch (err) {
     console.log(err)
   }
 };
 
-const scrapeGR = async () => {
+const scrapeGR = async (genres) => {
   try {
     const bookLinks = await getLinksByGenre('action');
     const bookData = await getEachBookData(bookLinks[1]);
+    bookData.genre_id = genre_id;
     console.log(bookData);
   } catch (err) {
     console.log(err);

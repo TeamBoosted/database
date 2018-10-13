@@ -31,6 +31,21 @@ const Medium = sequelize.define('medium', {
   vote_count: Sequelize.INTEGER
 });
 
+const Book = sequelize.define('book', {
+  title: Sequelize.STRING,
+  type: Sequelize.STRING,
+  image: Sequelize.STRING,
+  synopsis: Sequelize.STRING(2000),
+  goodReads_id: {
+    type: Sequelize.INTEGER,
+    unique: true
+  },
+  popularity: Sequelize.DECIMAL,
+  vote_avg: Sequelize.DECIMAL,
+  vote_count: Sequelize.INTEGER,
+  genre_id: Sequelize.INTEGER
+});
+
 const Genre = sequelize.define('genre', {
   genre_id: {
     type: Sequelize.INTEGER,
@@ -205,7 +220,7 @@ const getTopThreeGenres = async (id_token) => {
 // })
 // addGenreToMedium([28, 53, 878], 27205);
 
-module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres };
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, Book };
 
 
 // User.sync({ force: true })
@@ -293,3 +308,5 @@ module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, ad
 // Medium.findAll().then(data => {
 //   console.log('find all media', data[0].dataValues);
 // }).catch(console.log);
+
+// Book.sync({ force: true });
