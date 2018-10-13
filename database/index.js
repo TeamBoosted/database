@@ -182,7 +182,10 @@ const getTopThreeGenres = async (id_token) => {
   const userId = user.dataValues.id;
   return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
 };
+<<<<<<< HEAD
 
+=======
+>>>>>>> 96314bd1b364c4f5ebc4854bb2575722b945fc6a
 // addMedium(myObj,'1')
 // addGenre(
 //   [{genre_id:2000,
@@ -206,8 +209,17 @@ const getTopThreeGenres = async (id_token) => {
 // })
 // addGenreToMedium([28, 53, 878], 27205);
 
+<<<<<<< HEAD
 module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres };
 
+=======
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation };
+module.exports.getTopThreeGenres = async (id_token) => {
+  const user = await findOneUserByToken(id_token);
+  const userId = user.dataValues.id;
+  return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
+};
+>>>>>>> 96314bd1b364c4f5ebc4854bb2575722b945fc6a
 
 // User.sync({ force: true })
 //   .then(() => {
