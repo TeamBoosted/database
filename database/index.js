@@ -104,59 +104,31 @@ const addGenre = (genre_id) => {
 const addGenreToUser = async(genreList, id_token) => {
   const user = await findOneUserByToken(id_token);
   const userId = user.dataValues.id;
-  // console.log('----------\nuserTest\n ----------\n', user);
-  // genreList.forEach(genre_id => {
-  //   return User_Genre.upsert({genreId, userId})
-  //     .then(genreResults => {
-  //       // console.log('----------\ngenreResults\n----------\n', typeof(genreResults));
-  //       findOneGenreByID(genre_id)
-  //         .then(genreData => {
-  //           // console.log(`----------\ngenreData\n----------\n`, genreData);
-  //           findOneUserByToken(id_token)
-  //             .then(user => { 
-  //               const userId = user.dataValues.id;
-  //               // if (genreResults === false) {
-  //               //   console.log(`----------\ngenreData\n----------\n`, genreResults);
-  //               //       findOneUserAndGenreRelation(userId, genreData.dataValues.id)
-  //               //         .then(data => {
-  //               //           console.log('HERE IS THE DATA',data)
-  //               //           data.increment('genre_score', {by: 1})
-  //               //       }) 
-  //               // } else { 
-  //                 return user.addGenre(genre_id)
-  //                 .then(()=>{
-  //                   findOneUserAndGenreRelation(userId, genreData.dataValues.id)
-  //                     .then(data=> {
-  //                       data.increment('genre_score', { by: 1 })
-  //                     })
-  //                 })
-  //               // }
-  //           }) 
-  //     })
-  //   })
-  //     .catch(console.log)
-  // })
-    genreList.forEach(genre_id => {
-      return Genre.upsert({ genre_id })
+  
+  genreList.forEach((genre_id, index) => {
+    return Genre.upsert({ genre_id })
       .then(genreResults => {
-        if(genreResults === false) {
+        if (genreResults === false) {
           findOneGenreByID(genre_id)
             .then(results => {
               const genreId = results.dataValues.id;
               User_Genre.upsert({ genreId, userId})
                 .then(user_genre_results => {
-                  console.log('user_genre_results', user_genre_results);
                   if(!user_genre_results) {
                     findOneUserAndGenreRelation(userId, genreId)
                     .then(data => {
-                      console.log('I got the mutha fuckin data in that mutha fucking function');
-                      data.increment('genre_score', { by: 1 });
+                      let score = genreList.length - index;
+                      data.increment('genre_score', { by: score});
                     })
                   }
-            })
-          })
+                })
+              })
         } else {
-          console.log('-------------\nInside the else of the if\n-------------\n')
+          findOneGenreByID(genre_id)
+          .then(results => {
+            const genreId = results.dataValues.id;
+            User_Genre.upsert({ genreId, userId })
+          })
         }
       })
     })
