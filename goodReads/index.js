@@ -1,5 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const genres = require('./genres.js');
+console.log(genres);
 
 const getLinksByGenre = async (genre) => {
   try {
@@ -45,4 +47,4 @@ const scrapeGR = async () => {
   }
 };
 
-scrapeGR();
+// scrapeGR();
