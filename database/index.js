@@ -104,7 +104,7 @@ const addGenre = (genre_id) => {
 const addGenreToUser = async(genreList, id_token) => {
   const user = await findOneUserByToken(id_token);
   const userId = user.dataValues.id;
-  
+
   genreList.forEach((genre_id, index) => {
     return Genre.upsert({ genre_id })
       .then(genreResults => {
@@ -177,8 +177,12 @@ const getLastThreeMedia = (id_token) => {
     })
 };
 
+const getTopThreeGenres = async (id_token) => {
+  const user = await findOneUserByToken(id_token);
+  const userId = user.dataValues.id;
+  return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
+};
 // addMedium(myObj,'1')
-
 // addGenre(
 //   [{genre_id:2000,
 //   name:'comedy'},
@@ -201,7 +205,11 @@ const getLastThreeMedia = (id_token) => {
 // })
 
 module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation };
-
+module.exports.getTopThreeGenres = async (id_token) => {
+  const user = await findOneUserByToken(id_token);
+  const userId = user.dataValues.id;
+  return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
+};
 
 // User.sync({ force: true })
 //   .then(() => {

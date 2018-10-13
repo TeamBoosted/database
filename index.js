@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 });
 
 app.post('/db/users/signup', (req, res) => {
-  let { id_token } = req.body;
+  const { id_token } = req.body;
   db.addUser(id_token)
     .then(() => {
       res.sendStatus(200);
@@ -27,7 +27,7 @@ app.post('/db/users/signup', (req, res) => {
 });
 
 app.post('/db/addMedium', (req, res) => {
-  let { mediumObj, id_token } = req.body;
+  const { mediumObj, id_token } = req.body;
   db.addMedium(mediumObj, id_token)
     .then(() => {
       res.sendStatus(200);
@@ -51,7 +51,7 @@ app.post('/db/addGenre', (req, res) => {
 });
 
 app.post('/db/users/getUserByToken', (req, res) => {
-  let { id_token } = req.body;
+  const { id_token } = req.body;
   db.findOneUserByToken(id_token)
     .then(data => {
       res.json(data);
@@ -63,7 +63,7 @@ app.post('/db/users/getUserByToken', (req, res) => {
 });
 
 app.post('/db/getLastThreeMedia', (req, res) => {
-  let { id_token } = req.body;
+  const { id_token } = req.body;
   db.getLastThreeMedia(id_token)
     .then(data => {
       let massaged = data.map(el => {
@@ -76,6 +76,23 @@ app.post('/db/getLastThreeMedia', (req, res) => {
       console.log(err);
       res.sendStatus(500);
     })
+});
+
+app.post('/db/getTopGenres', (req, res) => {
+  const { id_token } = req.body;
+  db.getTopThreeGenres(id_token)
+  .then(data => {
+    const body = [];
+    data.forEach(result => {
+      const {genre_score, genreId} = result.dataValues;
+      body.push({genre_score, genreId});
+    });
+    res.send(body);
+  })
+  .catch(err => {
+    console.log('----------\nError getting Top Genres\n----------\n', err);
+    res.sendStatus(500);
+  })
 });
 
 app.listen(PORT, () => {
