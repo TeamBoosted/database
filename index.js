@@ -99,5 +99,3 @@ app.post('/db/getTopGenres', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
-
-scrapeGR();
