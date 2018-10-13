@@ -1,8 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const { genres } = require('./genres.js');
-const { Book } = require('../database');
-console.log(Book)
+const { addBookFromScrape } = require('../database');
 
 const getLinksByGenre = async (genre) => {
   try {
@@ -40,13 +39,13 @@ const getEachBookData = async (endpoint) => {
 
 const scrapeGR = async (genres) => {
   try {
-    const bookLinks = await getLinksByGenre('action');
+    const bookLinks = await getLinksByGenre(genres["28"]);
     const bookData = await getEachBookData(bookLinks[1]);
-    bookData.genre_id = genre_id;
-    console.log(bookData);
+    bookData.genre_id = "28";
+    addBookFromScrape(bookData);
   } catch (err) {
     console.log(err);
   }
 };
 
-// scrapeGR();
+scrapeGR(genres);

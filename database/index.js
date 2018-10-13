@@ -103,6 +103,15 @@ const addMedium = (mediumObj, id_token) => {
     .catch(console.log);
 };
 
+const addBookFromScrape = async (bookObj) => {
+  try {
+    const scrapedBook = await Book.upsert(bookObj);
+    return scrapedBook;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const addGenre = (genre_id) => {
   // genreList.forEach(genre => {
   //   Genre.upsert({genre_id: genre}) 
@@ -220,7 +229,7 @@ const getTopThreeGenres = async (id_token) => {
 // })
 // addGenreToMedium([28, 53, 878], 27205);
 
-module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, Book };
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, addBookFromScrape };
 
 
 // User.sync({ force: true })
