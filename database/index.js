@@ -60,8 +60,8 @@ Medium.belongsToMany(User, { through: User_Media });
 Genre.belongsToMany(User, { through: User_Genre });
 User.belongsToMany(Genre, { through: User_Genre });
 
-Genre.belongsToMany(Medium, { through: Medium_Genre });
 Medium.belongsToMany(Genre,{ through: Medium_Genre });
+Genre.belongsToMany(Medium, { through: Medium_Genre });
 
 
 
@@ -122,24 +122,24 @@ const addGenreToUser = async(genreList, id_token) => {
                   }
                 })
               })
-        } else {
-          findOneGenreByID(genre_id)
-          .then(results => {
-            const genreId = results.dataValues.id;
-            User_Genre.upsert({ genreId, userId })
-          })
-        }
-      })
+      } else {
+        findOneGenreByID(genre_id)
+        .then(results => {
+          const genreId = results.dataValues.id;
+          User_Genre.upsert({ genreId, userId })
+        })
+      }
     })
+  })
 };
 
 
-const addGenreToMedium = async(genreList, id) => {
-  const medium = await findOneMediumByID(id);
+const addGenreToMedium = async(genreList, moviedb_id) => {
+  const medium = await findOneMediumByID(moviedb_id);
   const mediumId = medium.dataValues.id;
   genreList.forEach(genre_id => {
     Genre.upsert({ genre_id })
-    .then(results => {
+    .then(() => {
       findOneGenreByID(genre_id)
       .then(genre => {
         const genreId = genre.dataValues.id;
@@ -173,6 +173,7 @@ const findOneGenreByID = (genre_id) => {
 const getLastThreeMedia = (id_token) => {
   return User.findOne({ where: { id_token } })
     .then(user => {
+      console.log('user', user);
       return user.getMedia({ limit: 3, order: [['createdAt', 'DESC']] });
     })
 };
@@ -182,6 +183,27 @@ const getTopThreeGenres = async (id_token) => {
   const userId = user.dataValues.id;
   return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
 };
+
+const getGenreByMedium = (moviedb_id) => {
+  Medium.findOne({ where: { moviedb_id }})
+    .then(medium => {
+      medium.getGenres({limit: 3})
+      .then(results => {
+        return results
+      })
+      })
+    .catch(console.log);
+};
+
+const getMediumByGenre = (genre_id) => {
+ return Genre.findOne({where: { genre_id }})
+  .then(genre => {
+    genre.getMedia({ limit: 3 })
+    .then(results => {
+      console.log(`==========\nresults\n==========\n`, results);      
+    })
+  })
+}
 // addMedium(myObj,'1')
 // addGenre(
 //   [{genre_id:2000,
@@ -204,8 +226,12 @@ const getTopThreeGenres = async (id_token) => {
 //   data.increment('genre_score', {by: 1})
 // })
 // addGenreToMedium([28, 53, 878], 27205);
+// const id = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ik1UZzJNMEUzTUVSQk5FWTJNVFpETURBM1JFUTROa1UwTlRsRlJqTTFSa1ZDUmpsRVJEYzNNZyJ9.eyJpc3MiOiJodHRwczovL2Jvb3N0ZWRzZWFyY2guYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDViYjU0MzMxYmRkN2JmMmQ5NWJkODRkZiIsImF1ZCI6IlE3aE5UY19nbklHWWszY1ZlOGV3a1RuVXZkXzVQRVlBIiwiaWF0IjoxNTM4ODYwOTQ2LCJleHAiOjE1Mzg4OTY5NDYsImF0X2hhc2giOiJ3TzVnRzVQZE4tNHZUNHhzS0dPT3lRIiwibm9uY2UiOiIwOGJpSXk1Vlp6UmsyZ2oxaksyUEdnVHphcUxtRXotQiJ9.WeTQf0scFS8YvqzMlLnxNu7HzdV3lqK1HWwk184dUpefUI5OBGD4MtghiIz2ydWUPuAXDxQ35UUgiuMxTcjYdXfC9qW6E0RJiv-yKBrDWEgjTCxdu0WPtKPSDKnOwoIc1BAN2N4E5Z8sh0jifU6R5CJyj1iqFB8caIB14xyIAShAKBZLsvK-4Ne-ZMRKcedbLecYCLkKnNUCDbGP7c7MoA1xwkm55dk5ZeHh7M4Qkf-riMQbnDnDcVyKHbI3B7e5yDhmIRHroIKoXxWZpBIIMyBa3Vaadz5LGxaQzd3vHW_P0fsuNdwK6Bzbvh9aM2zJlhOFkc5JzaONZdIq-7fcAw'
+// getLastThreeMedia(id)
+// getGenreByMedium(27205);
+// getMediumByGenre(10749);
 
-module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres };
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, getGenreByMedium, getMediumByGenre };
 
 
 // User.sync({ force: true })
