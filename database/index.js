@@ -10,8 +10,8 @@ sequelize.authenticate()
   .catch(console.log);
 
 const User = sequelize.define('user', {
-  id_token: { 
-    type:Sequelize.STRING(2000),
+  id_token: {
+    type: Sequelize.STRING(2000),
     unique: true
   }
 });
@@ -23,27 +23,42 @@ const Medium = sequelize.define('medium', {
   image: Sequelize.STRING,
   synopsis: Sequelize.STRING(2000),
   moviedb_id: {
-    type:Sequelize.INTEGER,
-    unique:true
+    type: Sequelize.INTEGER,
+    unique: true
   },
   popularity: Sequelize.DECIMAL,
   vote_avg: Sequelize.DECIMAL,
   vote_count: Sequelize.INTEGER
 });
 
-const Genre = sequelize.define('genre',{
+const Book = sequelize.define('book', {
+  title: Sequelize.STRING,
+  type: Sequelize.STRING,
+  image: Sequelize.STRING,
+  synopsis: Sequelize.STRING(2000),
+  goodReads_id: {
+    type: Sequelize.INTEGER,
+    unique: true
+  },
+  popularity: Sequelize.DECIMAL,
+  vote_avg: Sequelize.DECIMAL,
+  vote_count: Sequelize.INTEGER,
+  genre_id: Sequelize.INTEGER
+});
+
+const Genre = sequelize.define('genre', {
   genre_id: {
-    type:Sequelize.INTEGER,
-    unique:true
+    type: Sequelize.INTEGER,
+    unique: true
   },
   name: Sequelize.STRING
 });
 
-const User_Genre = sequelize.define('user_genre',{
+const User_Genre = sequelize.define('user_genre', {
   genre_score: {
-    type:Sequelize.INTEGER,
+    type: Sequelize.INTEGER,
     defaultValue: 0
-  }  
+  }
 });
 
 const Medium_Genre = sequelize.define('medium_genre', {});
@@ -60,7 +75,7 @@ Medium.belongsToMany(User, { through: User_Media });
 Genre.belongsToMany(User, { through: User_Genre });
 User.belongsToMany(Genre, { through: User_Genre });
 
-Medium.belongsToMany(Genre,{ through: Medium_Genre });
+Medium.belongsToMany(Genre, { through: Medium_Genre });
 Genre.belongsToMany(Medium, { through: Medium_Genre });
 
 
@@ -88,11 +103,20 @@ const addMedium = (mediumObj, id_token) => {
     .catch(console.log);
 };
 
+const addBookFromScrape = async (bookObj) => {
+  try {
+    const scrapedBook = await Book.upsert(bookObj);
+    return scrapedBook;
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 const addGenre = (genre_id) => {
   // genreList.forEach(genre => {
   //   Genre.upsert({genre_id: genre}) 
   // })
-  return Genre.upsert({genre_id})
+  return Genre.upsert({ genre_id })
   // return Promise.all([
   //   Genre.upsert({genre_id: genreList[0]}),
   //   Genre.upsert({genre_id: genreList[1]}),
@@ -100,7 +124,7 @@ const addGenre = (genre_id) => {
   // ]);
 };
 
-const addGenreToUser = async(genreList, id_token) => {
+const addGenreToUser = async (genreList, id_token) => {
   const user = await findOneUserByToken(id_token);
   const userId = user.dataValues.id;
 
@@ -111,44 +135,44 @@ const addGenreToUser = async(genreList, id_token) => {
           findOneGenreByID(genre_id)
             .then(results => {
               const genreId = results.dataValues.id;
-              User_Genre.upsert({ genreId, userId})
+              User_Genre.upsert({ genreId, userId })
                 .then(user_genre_results => {
-                  if(!user_genre_results) {
+                  if (!user_genre_results) {
                     findOneUserAndGenreRelation(userId, genreId)
-                    .then(data => {
-                      let score = genreList.length - index;
-                      data.increment('genre_score', { by: score});
-                    })
+                      .then(data => {
+                        let score = genreList.length - index;
+                        data.increment('genre_score', { by: score });
+                      })
                   }
                 })
-              })
-      } else {
-        findOneGenreByID(genre_id)
-        .then(results => {
-          const genreId = results.dataValues.id;
-          User_Genre.upsert({ genreId, userId })
-        })
-      }
-    })
+            })
+        } else {
+          findOneGenreByID(genre_id)
+            .then(results => {
+              const genreId = results.dataValues.id;
+              User_Genre.upsert({ genreId, userId })
+            })
+        }
+      })
   })
 };
 
 
-const addGenreToMedium = async(genreList, moviedb_id) => {
+const addGenreToMedium = async (genreList, moviedb_id) => {
   const medium = await findOneMediumByID(moviedb_id);
   const mediumId = medium.dataValues.id;
   genreList.forEach(genre_id => {
     Genre.upsert({ genre_id })
-    .then(() => {
-      findOneGenreByID(genre_id)
-      .then(genre => {
-        const genreId = genre.dataValues.id;
-        return Medium_Genre.upsert({genreId, mediumId})
-      })
-    })
-    .catch(console.log);
-  })
-};
+      .then(() => {
+        findOneGenreByID(genre_id)
+          .then(genre => {
+            const genreId = genre.dataValues.id;
+            return Medium_Genre.upsert({ genreId, mediumId })
+          })
+          .catch(console.log);
+      });
+  });
+}
 
 const findOneUserAndGenreRelation = (userId, genreId) => {
   const testGenreUser = User_Genre.findOne({ where: { userId, genreId } });
@@ -181,28 +205,28 @@ const getLastThreeMedia = (id_token) => {
 const getTopThreeGenres = async (id_token) => {
   const user = await findOneUserByToken(id_token);
   const userId = user.dataValues.id;
-  return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
+  return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']] })
 };
 
 const getGenreByMedium = (moviedb_id) => {
-  Medium.findOne({ where: { moviedb_id }})
+  Medium.findOne({ where: { moviedb_id } })
     .then(medium => {
-      medium.getGenres({limit: 3})
-      .then(results => {
-        return results
-      })
-      })
+      medium.getGenres({ limit: 3 })
+        .then(results => {
+          return results
+        })
+    })
     .catch(console.log);
 };
 
 const getMediumByGenre = (genre_id) => {
- return Genre.findOne({where: { genre_id }})
-  .then(genre => {
-    genre.getMedia({ limit: 3 })
-    .then(results => {
-      console.log(`==========\nresults\n==========\n`, results);      
+  return Genre.findOne({ where: { genre_id } })
+    .then(genre => {
+      genre.getMedia({ limit: 3 })
+        .then(results => {
+          console.log(`==========\nresults\n==========\n`, results);
+        })
     })
-  })
 }
 // addMedium(myObj,'1')
 // addGenre(
@@ -231,7 +255,7 @@ const getMediumByGenre = (genre_id) => {
 // getGenreByMedium(27205);
 // getMediumByGenre(10749);
 
-module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, getGenreByMedium, getMediumByGenre };
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, getGenreByMedium, getMediumByGenre, addBookFromScrape };
 
 
 // User.sync({ force: true })
@@ -249,7 +273,7 @@ module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, ad
 //   })
 //   .then(() => {
 //     return Medium_Genre.sync({ force: true });
-//   }) 
+//   })
 //   .then(() => {
 //     const testUser = User.build({
 //       id_token: 'auth0|12345'
@@ -319,3 +343,5 @@ module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, ad
 // Medium.findAll().then(data => {
 //   console.log('find all media', data[0].dataValues);
 // }).catch(console.log);
+
+// Book.sync({ force: true });

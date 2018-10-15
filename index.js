@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const db = require('./database');
 const cors = require('cors');
 const PORT = process.env.PORT || 8081;
+const { scrapeGR } = require('./goodReads');
 
 const app = express();
 // app.use(cors());
@@ -88,18 +89,18 @@ app.post('/db/getLastThreeMedia', (req, res) => {
 app.post('/db/getTopGenres', (req, res) => {
   const { id_token } = req.body;
   db.getTopThreeGenres(id_token)
-  .then(data => {
-    const body = [];
-    data.forEach(result => {
-      const {genre_score, genreId} = result.dataValues;
-      body.push({genre_score, genreId});
-    });
-    res.send(body);
-  })
-  .catch(err => {
-    console.log('----------\nError getting Top Genres\n----------\n', err);
-    res.sendStatus(500);
-  })
+    .then(data => {
+      const body = [];
+      data.forEach(result => {
+        const { genre_score, genreId } = result.dataValues;
+        body.push({ genre_score, genreId });
+      });
+      res.send(body);
+    })
+    .catch(err => {
+      console.log('----------\nError getting Top Genres\n----------\n', err);
+      res.sendStatus(500);
+    })
 });
 
 app.listen(PORT, () => {
