@@ -31,6 +31,7 @@ const getEachBookData = async (endpoint) => {
     const popularity = Number($('.votes.value-title').text().replace(/\s/g, '')) + Number(vote_count);
     const image = $('#coverImage').attr('src');
     const goodReads_id = endpoint.replace(/[^\d]/g, '');
+    console.log(synopsis);
     return { title, synopsis, vote_avg, vote_count, popularity, image, goodReads_id, type: 'book' };
   } catch (err) {
     console.log(err)
@@ -40,7 +41,7 @@ const getEachBookData = async (endpoint) => {
 const scrapeGR = async (genres) => {
   try {
     const bookLinks = await getLinksByGenre(genres["28"]);
-    const bookData = await getEachBookData(bookLinks[1]);
+    const bookData = await getEachBookData(bookLinks[4]);
     bookData.genre_id = "28";
     addBookFromScrape(bookData);
   } catch (err) {
