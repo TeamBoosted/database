@@ -37,13 +37,11 @@ const Book = sequelize.define('book', {
   image: Sequelize.STRING,
   synopsis: Sequelize.STRING(2000),
   goodReads_id: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.BIGINT,
     unique: true
   },
-  popularity: Sequelize.DECIMAL,
   vote_avg: Sequelize.DECIMAL,
-  vote_count: Sequelize.INTEGER,
-  genre_id: Sequelize.INTEGER
+  vote_count: Sequelize.BIGINT
 });
 
 const Genre = sequelize.define('genre', {
@@ -63,6 +61,7 @@ const User_Genre = sequelize.define('user_genre', {
 
 const Medium_Genre = sequelize.define('medium_genre', {});
 
+const Book_Genre = sequelize.define('book_genre', {});
 
 const User_Media = sequelize.define('user_media', {
   rating: Sequelize.INTEGER
@@ -78,7 +77,8 @@ User.belongsToMany(Genre, { through: User_Genre });
 Medium.belongsToMany(Genre, { through: Medium_Genre });
 Genre.belongsToMany(Medium, { through: Medium_Genre });
 
-
+Book.belongsToMany(Genre, { through: Book_Genre });
+Genre.belongsToMany(Book, { through: Book_Genre });
 
 const addUser = (id_token) => {
   const testuser = User.create({ id_token });
@@ -103,13 +103,17 @@ const addMedium = (mediumObj, id_token) => {
     .catch(console.log);
 };
 
-const addBookFromScrape = async (bookObj) => {
-  try {
-    const scrapedBook = await Book.upsert(bookObj);
-    return scrapedBook;
-  } catch (err) {
-    console.log(err);
-  }
+const addBookFromScrape = (bookObj, genre_id, name) => {
+  return Book.upsert(bookObj)
+    .then(() => {
+      return Genre.upsert({ genre_id, name })
+    })
+    .then(async () => {
+      let book = await Book.findOne({ where: { goodReads_id: bookObj.goodReads_id } });
+      let genre = await Genre.findOne({ where: { name } });
+      return genre.addBook(book.id);
+    })
+    .catch(console.log);
 };
 
 const addGenre = (genre_id) => {
@@ -343,5 +347,3 @@ module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, ad
 // Medium.findAll().then(data => {
 //   console.log('find all media', data[0].dataValues);
 // }).catch(console.log);
-
-// Book.sync({ force: true });
