@@ -28,9 +28,15 @@ app.post('/db/users/signup', (req, res) => {
 
 app.post('/db/addMedium', (req, res) => {
   const { mediumObj, id_token } = req.body;
+  const { genre_id, moviedb_id } = mediumObj;
   db.addMedium(mediumObj, id_token)
     .then(() => {
-      res.sendStatus(200);
+      db.addGenreToMedium(genre_id, moviedb_id)
+      // res.sendStatus(200);
+    })
+    .then(results => {
+      console.log('Made it to then catch', results);
+      res.sendStatus(200)
     })
     .catch(err => {
       console.log(err);
@@ -39,6 +45,7 @@ app.post('/db/addMedium', (req, res) => {
 });
 
 app.post('/db/addGenre', (req, res) => {
+  //Send mediumObj here as well
   const { genre_ids, id_token } = req.body;
   db.addGenreToUser(genre_ids, id_token)
     .then(() => {

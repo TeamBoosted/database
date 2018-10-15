@@ -60,8 +60,8 @@ Medium.belongsToMany(User, { through: User_Media });
 Genre.belongsToMany(User, { through: User_Genre });
 User.belongsToMany(Genre, { through: User_Genre });
 
-Genre.belongsToMany(Medium, { through: Medium_Genre });
 Medium.belongsToMany(Genre,{ through: Medium_Genre });
+Genre.belongsToMany(Medium, { through: Medium_Genre });
 
 
 
@@ -122,24 +122,24 @@ const addGenreToUser = async(genreList, id_token) => {
                   }
                 })
               })
-        } else {
-          findOneGenreByID(genre_id)
-          .then(results => {
-            const genreId = results.dataValues.id;
-            User_Genre.upsert({ genreId, userId })
-          })
-        }
-      })
+      } else {
+        findOneGenreByID(genre_id)
+        .then(results => {
+          const genreId = results.dataValues.id;
+          User_Genre.upsert({ genreId, userId })
+        })
+      }
     })
+  })
 };
 
 
-const addGenreToMedium = async(genreList, id) => {
-  const medium = await findOneMediumByID(id);
+const addGenreToMedium = async(genreList, moviedb_id) => {
+  const medium = await findOneMediumByID(moviedb_id);
   const mediumId = medium.dataValues.id;
   genreList.forEach(genre_id => {
     Genre.upsert({ genre_id })
-    .then(results => {
+    .then(() => {
       findOneGenreByID(genre_id)
       .then(genre => {
         const genreId = genre.dataValues.id;
@@ -173,6 +173,7 @@ const findOneGenreByID = (genre_id) => {
 const getLastThreeMedia = (id_token) => {
   return User.findOne({ where: { id_token } })
     .then(user => {
+      console.log('user', user);
       return user.getMedia({ limit: 3, order: [['createdAt', 'DESC']] });
     })
 };
@@ -182,6 +183,27 @@ const getTopThreeGenres = async (id_token) => {
   const userId = user.dataValues.id;
   return User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']]})
 };
+
+const getGenreByMedium = (moviedb_id) => {
+  Medium.findOne({ where: { moviedb_id }})
+    .then(medium => {
+      medium.getGenres({limit: 3})
+      .then(results => {
+        return results
+      })
+      })
+    .catch(console.log);
+};
+
+const getMediumByGenre = (genre_id) => {
+ return Genre.findOne({where: { genre_id }})
+  .then(genre => {
+    genre.getMedia({ limit: 3 })
+    .then(results => {
+      console.log(`==========\nresults\n==========\n`, results);      
+    })
+  })
+}
 // addMedium(myObj,'1')
 // addGenre(
 //   [{genre_id:2000,
@@ -205,7 +227,11 @@ const getTopThreeGenres = async (id_token) => {
 // })
 // addGenreToMedium([28, 53, 878], 27205);
 
-module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres };
+// getLastThreeMedia(id)
+// getGenreByMedium(27205);
+// getMediumByGenre(10749);
+
+module.exports = { addUser, addMedium, findOneUserByToken, getLastThreeMedia, addGenre, findOneMediumByID, addGenreToMedium, addGenreToUser, findOneGenreByID, findOneUserAndGenreRelation, getTopThreeGenres, getGenreByMedium, getMediumByGenre };
 
 
 // User.sync({ force: true })
