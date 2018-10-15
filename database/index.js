@@ -90,6 +90,7 @@ const addMedium = (mediumObj, id_token) => {
     .then(medium => {
       return findOneUserByToken(id_token)
         .then(user => {
+          console.log('--------------\nHere is the id_token\n--------------\n', id_token)
           if (!user) {
             return addUser(id_token)
               .then(user => {
