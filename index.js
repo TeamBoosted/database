@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const db = require('./database');
 const cors = require('cors');
 const PORT = process.env.PORT || 8081;
-const { scrapeGR } = require('./goodReads');
 
 const app = express();
 // app.use(cors());
@@ -101,6 +100,17 @@ app.post('/db/getTopGenres', (req, res) => {
       console.log('----------\nError getting Top Genres\n----------\n', err);
       res.sendStatus(500);
     })
+});
+
+app.post('/db/addGoodReadsBook', async (req, res) => {
+  let { bookObj, genre_id, name } = req.body;
+  try {
+    await db.addBookFromScrape(bookObj, genre_id, name);
+    res.sendStatus(200);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
 });
 
 app.listen(PORT, () => {
