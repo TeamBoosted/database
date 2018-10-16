@@ -1,10 +1,6 @@
 require("dotenv").config();
 const Sequelize = require("sequelize");
-const PG_URL =
-  process.env.PG_URL ||
-  `postgres://${process.env.PG_USER}:${
-  process.env.PG_PASS
-  }@localhost:5432/test`;
+const PG_URL = process.env.PG_URL || `postgres://${process.env.PG_USER}:${process.env.PG_PASS}@localhost:5432/test`;
 const sequelize = new Sequelize(PG_URL);
 
 sequelize
@@ -213,12 +209,14 @@ const getGenreByMedium = moviedb_id => {
     .catch(console.log);
 };
 
-const getMediumByGenre = genre_id => {
-  return Genre.findOne({ where: { genre_id } }).then(genre => {
-    genre.getMedia({ limit: 3 }).then(results => {
-      console.log(`==========\nresults\n==========\n`, results);
-    });
-  });
+const getMediumByGenre = async genre_id => {
+  let genre = await Genre.findOne({ where: { genre_id }})
+  return genre.getMedia({ limit: 3 })
+  // return Genre.findOne({ where: { genre_id } }).then(genre => {
+  //   genre.getMedia({ limit: 3 }).then(results => {
+  //     console.log(`==========\nresults\n==========\n`, results);
+  //   });
+  // });
 };
 
 const getBooksByGenre = async genre_id => {
@@ -226,6 +224,10 @@ const getBooksByGenre = async genre_id => {
   return genre.getBooks()
 };
 
+const getAllMediaByUser = async id_token => {
+  let user = await findOneUserByToken(id_token);
+  return user.getMedia();
+}
 // addMedium(myObj,'1')
 // addGenre(
 //   [{genre_id:2000,
@@ -268,7 +270,8 @@ module.exports = {
   getGenreByMedium,
   getMediumByGenre,
   addBookFromScrape,
-  getBooksByGenre
+  getBooksByGenre,
+  getAllMediaByUser
 };
 
 // User.sync({ force: true })
