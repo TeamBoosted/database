@@ -113,6 +113,17 @@ app.post('/db/addGoodReadsBook', async (req, res) => {
   }
 });
 
+app.get('/db/getBookRecsByGenre/:genre_id', async (req, res) => {
+  const { genre_id } = req.params;
+  try {
+    let books = await db.getBooksByGenre(genre_id);
+    res.json(books);
+  } catch (err) {
+    console.log(err);
+    res.sendStatus(500);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
 });
