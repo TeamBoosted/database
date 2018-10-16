@@ -3,7 +3,7 @@ const Sequelize = require("sequelize");
 const PG_URL =
   process.env.PG_URL ||
   `postgres://${process.env.PG_USER}:${
-    process.env.PG_PASS
+  process.env.PG_PASS
   }@localhost:5432/test`;
 const sequelize = new Sequelize(PG_URL);
 
@@ -220,6 +220,12 @@ const getMediumByGenre = genre_id => {
     });
   });
 };
+
+const getBooksByGenre = async genre_id => {
+  let genre = await Genre.findOne({ where: { genre_id } });
+  return genre.getBooks()
+};
+
 // addMedium(myObj,'1')
 // addGenre(
 //   [{genre_id:2000,
@@ -261,7 +267,8 @@ module.exports = {
   getTopThreeGenres,
   getGenreByMedium,
   getMediumByGenre,
-  addBookFromScrape
+  addBookFromScrape,
+  getBooksByGenre
 };
 
 // User.sync({ force: true })
