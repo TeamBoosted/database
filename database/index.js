@@ -1,23 +1,23 @@
-require("dotenv").config();
-const Sequelize = require("sequelize");
+require('dotenv').config();
+const Sequelize = require('sequelize');
 const PG_URL = process.env.PG_URL || `postgres://${process.env.PG_USER}:${process.env.PG_PASS}@localhost:5432/test`;
 const sequelize = new Sequelize(PG_URL);
 
 sequelize
   .authenticate()
   .then(() => {
-    console.log("Connected to db");
+    console.log('Connected to db');
   })
   .catch(console.log);
 
-const User = sequelize.define("user", {
+const User = sequelize.define('user', {
   id_token: {
     type: Sequelize.STRING(2000),
     unique: true
   }
 });
 
-const Medium = sequelize.define("medium", {
+const Medium = sequelize.define('medium', {
   title: Sequelize.STRING,
   creator: Sequelize.STRING,
   type: Sequelize.STRING,
@@ -32,7 +32,7 @@ const Medium = sequelize.define("medium", {
   vote_count: Sequelize.INTEGER
 });
 
-const Book = sequelize.define("book", {
+const Book = sequelize.define('book', {
   title: Sequelize.STRING,
   type: Sequelize.STRING,
   image: Sequelize.STRING,
@@ -45,7 +45,7 @@ const Book = sequelize.define("book", {
   vote_count: Sequelize.BIGINT
 });
 
-const Genre = sequelize.define("genre", {
+const Genre = sequelize.define('genre', {
   genre_id: {
     type: Sequelize.INTEGER,
     unique: true
@@ -53,18 +53,18 @@ const Genre = sequelize.define("genre", {
   name: Sequelize.STRING
 });
 
-const User_Genre = sequelize.define("user_genre", {
+const User_Genre = sequelize.define('user_genre', {
   genre_score: {
     type: Sequelize.INTEGER,
     defaultValue: 0
   }
 });
 
-const Medium_Genre = sequelize.define("medium_genre", {});
+const Medium_Genre = sequelize.define('medium_genre', {});
 
-const Book_Genre = sequelize.define("book_genre", {});
+const Book_Genre = sequelize.define('book_genre', {});
 
-const User_Media = sequelize.define("user_media", {
+const User_Media = sequelize.define('user_media', {
   rating: Sequelize.INTEGER
 });
 
@@ -132,7 +132,7 @@ const addGenreToUser = async (genreList, id_token) => {
             if (!user_genre_results) {
               findOneUserAndGenreRelation(userId, genreId).then(data => {
                 let score = genreList.length - index;
-                data.increment("genre_score", { by: score });
+                data.increment('genre_score', { by: score });
               });
             }
           });
@@ -182,21 +182,26 @@ const findOneGenreByID = genre_id => {
   return testOneGenre;
 };
 
-const getLastThreeMedia = id_token => {
-  return User.findOne({ where: { id_token } }).then(user => {
-    console.log("user", user);
-    return user.getMedia({ limit: 3, order: [["createdAt", "DESC"]] });
-  });
+const getLastThreeMedia = async id_token => {
+  try {
+  const user = await User.findOne( { where: { id_token }});
+  const media = await user.getMedia({ limit: 3, order: [['updatedAt', 'DESC']] })
+  return media
+  } catch (err) {
+    console.log(err);
+  }
+  
 };
 
 const getTopThreeGenres = async id_token => {
+  try {
   const user = await findOneUserByToken(id_token);
   const userId = user.dataValues.id;
-  return User_Genre.findAll({
-    where: { userId },
-    limit: 3,
-    order: [["genre_score", "DESC"]]
-  });
+  const genres = await User_Genre.findAll({ where: { userId }, limit: 3, order: [['genre_score', 'DESC']] });
+  return genres
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 const getGenreByMedium = moviedb_id => {
@@ -212,11 +217,6 @@ const getGenreByMedium = moviedb_id => {
 const getMediumByGenre = async genre_id => {
   let genre = await Genre.findOne({ where: { genre_id }})
   return genre.getMedia({ limit: 3 })
-  // return Genre.findOne({ where: { genre_id } }).then(genre => {
-  //   genre.getMedia({ limit: 3 }).then(results => {
-  //     console.log(`==========\nresults\n==========\n`, results);
-  //   });
-  // });
 };
 
 const getBooksByGenre = async genre_id => {
