@@ -210,7 +210,7 @@ const getGenreByMedium = moviedb_id => {
 };
 
 const getMediumByGenre = async genre_id => {
-  let genre = await Genre.findOne({ where: { genre_id }})
+  let genre = await Genre.findOne({ where: { genre_id } })
   return genre.getMedia({ limit: 3 })
   // return Genre.findOne({ where: { genre_id } }).then(genre => {
   //   genre.getMedia({ limit: 3 }).then(results => {
@@ -221,7 +221,7 @@ const getMediumByGenre = async genre_id => {
 
 const getBooksByGenre = async genre_id => {
   let genre = await Genre.findOne({ where: { genre_id } });
-  return genre.getBooks()
+  return genre === null ? null : genre.getBooks();
 };
 
 const getAllMediaByUser = async id_token => {

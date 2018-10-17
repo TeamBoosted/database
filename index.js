@@ -114,7 +114,7 @@ app.get("/db/getBookRecsByGenre/:genre_id", async (req, res) => {
   const { genre_id } = req.params;
   try {
     let books = await db.getBooksByGenre(genre_id);
-    res.json(books);
+    res.send(books);
   } catch (err) {
     console.log(err);
     res.sendStatus(500);
