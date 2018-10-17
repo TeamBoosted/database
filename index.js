@@ -32,10 +32,8 @@ app.post('/db/addMedium', (req, res) => {
   db.addMedium(mediumObj, id_token)
     .then(() => {
       db.addGenreToMedium(genre_id, moviedb_id)
-      // res.sendStatus(200);
     })
     .then(results => {
-      console.log('Made it to then catch', results);
       res.sendStatus(200)
     })
     .catch(err => {
@@ -96,8 +94,7 @@ app.post('/db/getTopGenres', (req, res) => {
       });
       res.send(body);
     })
-    .catch(err => {
-      console.log('----------\nError getting Top Genres\n----------\n', err);
+    .catch(() => {
       res.sendStatus(500);
     })
 });
@@ -117,9 +114,19 @@ app.get('/db/getBookRecsByGenre/:genre_id', async (req, res) => {
   const { genre_id } = req.params;
   try {
     let books = await db.getBooksByGenre(genre_id);
-    res.json(books);
+    res.send(books);
   } catch (err) {
     console.log(err);
+    res.sendStatus(500);
+  }
+});
+
+app.get('/db/getAllMedia/:id_token', async (req, res) => {
+  const { id_token } = req.params;
+  try {
+    const media = await db.getAllMediaByUser(id_token);
+    res.json(media);
+  } catch (err) {
     res.sendStatus(500);
   }
 });
