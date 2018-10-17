@@ -1,8 +1,8 @@
-require('dotenv').config();
-const express = require('express');
-const bodyParser = require('body-parser');
-const db = require('./database');
-const cors = require('cors');
+require("dotenv").config();
+const express = require("express");
+const bodyParser = require("body-parser");
+const db = require("./database");
+const cors = require("cors");
 const PORT = process.env.PORT || 8081;
 
 const app = express();
@@ -10,11 +10,11 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  res.send('blah');
+app.get("/", (req, res) => {
+  res.send("blah");
 });
 
-app.post('/db/users/signup', (req, res) => {
+app.post("/db/users/signup", (req, res) => {
   const { id_token } = req.body;
   db.addUser(id_token)
     .then(() => {
@@ -26,15 +26,15 @@ app.post('/db/users/signup', (req, res) => {
     });
 });
 
-app.post('/db/addMedium', (req, res) => {
+app.post("/db/addMedium", (req, res) => {
   const { mediumObj, id_token } = req.body;
   const { genre_id, moviedb_id } = mediumObj;
   db.addMedium(mediumObj, id_token)
     .then(() => {
-      db.addGenreToMedium(genre_id, moviedb_id)
+      db.addGenreToMedium(genre_id, moviedb_id);
     })
     .then(results => {
-      res.sendStatus(200)
+      res.sendStatus(200);
     })
     .catch(err => {
       console.log(err);
@@ -42,7 +42,7 @@ app.post('/db/addMedium', (req, res) => {
     });
 });
 
-app.post('/db/addGenre', (req, res) => {
+app.post("/db/addGenre", (req, res) => {
   //Send mediumObj here as well
   const { genre_ids, id_token } = req.body;
   db.addGenreToUser(genre_ids, id_token)
@@ -55,7 +55,7 @@ app.post('/db/addGenre', (req, res) => {
     });
 });
 
-app.post('/db/users/getUserByToken', (req, res) => {
+app.post("/db/users/getUserByToken", (req, res) => {
   const { id_token } = req.body;
   db.findOneUserByToken(id_token)
     .then(data => {
@@ -64,10 +64,10 @@ app.post('/db/users/getUserByToken', (req, res) => {
     .catch(err => {
       console.log(err);
       res.sendStatus(500);
-    })
+    });
 });
 
-app.post('/db/getLastThreeMedia', (req, res) => {
+app.post("/db/getLastThreeMedia", (req, res) => {
   const { id_token } = req.body;
   db.getLastThreeMedia(id_token)
     .then(data => {
@@ -80,10 +80,10 @@ app.post('/db/getLastThreeMedia', (req, res) => {
     .catch(err => {
       console.log(err);
       res.sendStatus(500);
-    })
+    });
 });
 
-app.post('/db/getTopGenres', (req, res) => {
+app.post("/db/getTopGenres", (req, res) => {
   const { id_token } = req.body;
   db.getTopThreeGenres(id_token)
     .then(data => {
@@ -96,10 +96,10 @@ app.post('/db/getTopGenres', (req, res) => {
     })
     .catch(() => {
       res.sendStatus(500);
-    })
+    });
 });
 
-app.post('/db/addGoodReadsBook', async (req, res) => {
+app.post("/db/addGoodReadsBook", async (req, res) => {
   let { bookObj, genre_id, name } = req.body;
   try {
     await db.addBookFromScrape(bookObj, genre_id, name);
@@ -110,7 +110,7 @@ app.post('/db/addGoodReadsBook', async (req, res) => {
   }
 });
 
-app.get('/db/getBookRecsByGenre/:genre_id', async (req, res) => {
+app.get("/db/getBookRecsByGenre/:genre_id", async (req, res) => {
   const { genre_id } = req.params;
   try {
     let books = await db.getBooksByGenre(genre_id);
@@ -121,11 +121,12 @@ app.get('/db/getBookRecsByGenre/:genre_id', async (req, res) => {
   }
 });
 
-app.get('/db/getAllMedia/:id_token', async (req, res) => {
+app.get("/db/getAllMedia/:id_token", async (req, res) => {
+  console.log("IN THE DATABASE NOW BITCHES");
   const { id_token } = req.params;
   try {
     const media = await db.getAllMediaByUser(id_token);
-    res.json(media);
+    res.send(media);
   } catch (err) {
     res.sendStatus(500);
   }
