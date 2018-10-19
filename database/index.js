@@ -184,7 +184,7 @@ const findOneGenreByID = genre_id => {
 
 const getLastThreeMedia = id_token => {
   return User.findOne({ where: { id_token } }).then(user => {
-    return user.getMedia({ limit: 3, order: [["createdAt", "DESC"]] });
+    return user.getMedia({ limit: 3, order: [["updatedAt", "DESC"]] });
   });
 };
 
