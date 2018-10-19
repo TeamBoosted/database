@@ -31,7 +31,9 @@ app.post('/db/addMedium', (req, res) => {
   const { genre_id, moviedb_id } = mediumObj;
   db.addMedium(mediumObj, id_token)
     .then(() => {
-      db.addGenreToMedium(genre_id, moviedb_id)
+      if (genre_id) {
+        db.addGenreToMedium(genre_id, moviedb_id)
+      }
     })
     .then(results => {
       res.sendStatus(200)
