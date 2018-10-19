@@ -86,6 +86,10 @@ const addUser = id_token => {
 };
 
 const addMedium = (mediumObj, id_token) => {
+  if (mediumObj.goodReads_id) {
+    mediumObj.moviedb_id = mediumObj.goodReads_id;
+    delete mediumObj.id;
+  }
   return Medium.upsert(mediumObj)
     .then(() => {
       return User.upsert({ id_token });
