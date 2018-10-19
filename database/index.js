@@ -86,6 +86,10 @@ const addUser = id_token => {
 };
 
 const addMedium = (mediumObj, id_token) => {
+  if (mediumObj.goodReads_id) {
+    mediumObj.moviedb_id = mediumObj.goodReads_id;
+    delete mediumObj.id;
+  }
   return Medium.upsert(mediumObj)
     .then(() => {
       return User.upsert({ id_token });
@@ -184,8 +188,7 @@ const findOneGenreByID = genre_id => {
 
 const getLastThreeMedia = id_token => {
   return User.findOne({ where: { id_token } }).then(user => {
-    console.log("user", user);
-    return user.getMedia({ limit: 3, order: [["createdAt", "DESC"]] });
+    return user.getMedia({ limit: 3, order: [["updatedAt", "DESC"]] });
   });
 };
 
@@ -212,11 +215,6 @@ const getGenreByMedium = moviedb_id => {
 const getMediumByGenre = async genre_id => {
   let genre = await Genre.findOne({ where: { genre_id } })
   return genre.getMedia({ limit: 3 })
-  // return Genre.findOne({ where: { genre_id } }).then(genre => {
-  //   genre.getMedia({ limit: 3 }).then(results => {
-  //     console.log(`==========\nresults\n==========\n`, results);
-  //   });
-  // });
 };
 
 const getBooksByGenre = async genre_id => {
